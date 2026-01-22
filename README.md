@@ -52,9 +52,6 @@ This tool is for **educational and authorized testing only**. The developer (rkd
 
 ```
 
----
-
-### 2. 한국어 버전 (`README.ko.md`)
 
 ```markdown
 # AI 기반 취약점 통합 탐색기 및 툴 매니저
