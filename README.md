@@ -1,7 +1,3 @@
----
-
-### 1. English Version (`README.md`)
-
 ```markdown
 # AI-Powered Vulnerability Scanner & Tool Manager
 
