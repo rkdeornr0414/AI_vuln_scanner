@@ -50,10 +50,7 @@ This project is licensed under the **GNU GPL v3.0**.
 
 This tool is for **educational and authorized testing only**. The developer (rkdeornr0414) is not responsible for any misuse. Unauthorized scanning is strictly prohibited.
 
-```
 
-
-```markdown
 # AI 기반 취약점 통합 탐색기 및 툴 매니저
 
 AI의 추론 능력(ReAct)을 활용하여 타겟 웹사이트에 최적화된 공격 시나리오를 설계하고, 최신 보안 도구들을 자동 업데이트 및 실행하는 지능형 보안 엔진입니다.
