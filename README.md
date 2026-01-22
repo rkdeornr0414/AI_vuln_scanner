@@ -1,8 +1,8 @@
-```markdown
 # AI-Powered Vulnerability Scanner & Tool Manager
 
 An intelligent security orchestration engine that automatically updates open-source tools and executes context-aware penetration testing using AI reasoning (ReAct).
 
+---
 ## 🚀 Quick Start
 
 ### 1. View Tool Status
