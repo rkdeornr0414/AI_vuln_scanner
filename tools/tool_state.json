@@ -16,12 +16,12 @@
   },
   "paramspider": {
     "installed": true,
-    "local_version": "%H",
+    "local_version": "",
     "last_updated": "2026-01-25T22:02:32.306076"
   },
   "nuclei-templates": {
     "installed": true,
-    "local_version": "%H",
+    "local_version": "",
     "last_updated": "2026-01-25T22:04:23.730932"
   },
   "nuclei": {
@@ -46,7 +46,7 @@
   },
   "nmap-vulners": {
     "installed": true,
-    "local_version": "%H",
+    "local_version": "",
     "last_updated": "2026-02-07T14:05:45.069993"
   }
 }
