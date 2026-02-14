@@ -16,6 +16,7 @@
   },
   "paramspider": {
     "installed": true,
+<<<<<<< HEAD
     "local_version": "790eb91",
     "last_updated": "2026-02-14T00:45:01.722511"
   },
@@ -23,6 +24,15 @@
     "installed": true,
     "local_version": "d75d30f",
     "last_updated": "2026-02-14T00:44:02.604109"
+=======
+    "local_version": "",
+    "last_updated": "2026-01-25T22:02:32.306076"
+  },
+  "nuclei-templates": {
+    "installed": true,
+    "local_version": "",
+    "last_updated": "2026-01-25T22:04:23.730932"
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
   },
   "nuclei": {
     "installed": true,
@@ -41,7 +51,12 @@
   },
   "nmap-vulners": {
     "installed": true,
+<<<<<<< HEAD
     "local_version": "0555294",
     "last_updated": "2026-02-14T00:44:23.686775"
+=======
+    "local_version": "",
+    "last_updated": "2026-02-07T14:05:45.069993"
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
   }
 }

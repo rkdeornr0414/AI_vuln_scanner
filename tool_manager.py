@@ -153,12 +153,21 @@ class ToolRegistry:
                 repo="sqlmapproject/sqlmap",
                 tool_type=ToolType.SQL_INJECTION,
                 description="Automatic SQL Injection detection and exploitation tool",
+<<<<<<< HEAD
                 install_cmd='git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git "{path}"',
                 run_cmd=f'{PYTHON_CMD} "{{path}}/sqlmap.py" -u "{{target}}" --batch',
                 update_cmd='cd "{path}" && git pull',
                 version_cmd=f'{PYTHON_CMD} "{{path}}/sqlmap.py" --version',
                 install_cmd_win='git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git "{path}"',
                 run_cmd_win='python "{path}\\sqlmap.py" -u "{target}" --batch',
+=======
+                install_cmd="git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git",
+                run_cmd=f'{PYTHON_CMD} "{{path}}/sqlmap.py" -u "{{target}}" --batch',
+                update_cmd='cd "{path}" && git pull',
+                version_cmd=f'{PYTHON_CMD} "{{path}}/sqlmap.py" --version',
+                install_cmd_win="git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git",
+                run_cmd_win='python "{path}\\sqlmap.py" -u {target} --batch',
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
                 update_cmd_win='cd /d "{path}" && git pull',
                 version_cmd_win='python "{path}\\sqlmap.py" --version',
                 install_path=TOOLS_BASE_DIR / "sqlmap",
@@ -171,11 +180,19 @@ class ToolRegistry:
                 repo="s0md3v/XSStrike",
                 tool_type=ToolType.XSS,
                 description="Advanced XSS detection tool (run via python xsstrike.py)",
+<<<<<<< HEAD
                 install_cmd='git clone --depth 1 https://github.com/s0md3v/XSStrike.git "{path}"',
                 run_cmd=f'{PYTHON_CMD} "{{path}}/xsstrike.py" -u "{{target}}"',
                 update_cmd='cd "{path}" && git pull',
                 version_cmd=f'{PYTHON_CMD} "{{path}}/xsstrike.py" -h',
                 install_cmd_win='git clone --depth 1 https://github.com/s0md3v/XSStrike.git "{path}"',
+=======
+                install_cmd="git clone --depth 1 https://github.com/s0md3v/XSStrike.git",
+                run_cmd=f'{PYTHON_CMD} "{{path}}/xsstrike.py" -u "{{target}}"',
+                update_cmd='cd "{path}" && git pull',
+                version_cmd=f'{PYTHON_CMD} "{{path}}/xsstrike.py" -h',
+                install_cmd_win="git clone --depth 1 https://github.com/s0md3v/XSStrike.git",
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
                 run_cmd_win='python "{path}\\xsstrike.py" -u "{target}"',
                 update_cmd_win='cd /d "{path}" && git pull',
                 version_cmd_win='python "{path}\\xsstrike.py" -h',
@@ -189,6 +206,7 @@ class ToolRegistry:
                 repo="maurosoria/dirsearch",
                 tool_type=ToolType.RECON,
                 description="Web path bruteforce tool",
+<<<<<<< HEAD
                 install_cmd='git clone --depth 1 https://github.com/maurosoria/dirsearch.git "{path}" && pip install -r "{path}/requirements.txt"',
                 run_cmd=f'{PYTHON_CMD} "{{path}}/dirsearch.py" -u "{{target}}"',
                 update_cmd='cd "{path}" && git pull',
@@ -197,6 +215,16 @@ class ToolRegistry:
                 run_cmd_win='python "{path}\\dirsearch.py" -u "{target}"',
                 update_cmd_win='cd /d "{path}" && git pull',
                 version_cmd_win='python "{path}\\dirsearch.py" --version',
+=======
+                install_cmd="pip install dirsearch",
+                run_cmd='dirsearch -u "{target}"',
+                update_cmd="pip install --upgrade dirsearch",
+                version_cmd="dirsearch --version",
+                install_cmd_win="pip install dirsearch",
+                run_cmd_win="dirsearch -u {target}",
+                update_cmd_win="pip install --upgrade dirsearch",
+                version_cmd_win="dirsearch --version",
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
                 install_path=TOOLS_BASE_DIR / "dirsearch",
                 requires_go=False,
             ),
@@ -207,6 +235,7 @@ class ToolRegistry:
                 repo="devanshbatham/ParamSpider",
                 tool_type=ToolType.RECON,
                 description="Mining URLs from web archives for parameter discovery",
+<<<<<<< HEAD
                 install_cmd=f'git clone --depth 1 https://github.com/devanshbatham/ParamSpider.git "{{path}}" && PYTHONUTF8=1 {PYTHON_CMD} -m pip install "{{path}}"',
                 run_cmd=f'{PYTHON_CMD} -m paramspider.main -d "{{target}}"',
                 update_cmd=f'cd "{{path}}" && git pull && PYTHONUTF8=1 {PYTHON_CMD} -m pip install --upgrade "{{path}}"',
@@ -215,6 +244,16 @@ class ToolRegistry:
                 run_cmd_win='python -m paramspider.main -d "{target}"',
                 update_cmd_win='cd /d "{path}" && git pull && set PYTHONUTF8=1&& python -m pip install --upgrade "{path}"',
                 version_cmd_win='cd /d "{path}" && git rev-parse --short HEAD',
+=======
+                install_cmd="git clone --depth 1 https://github.com/devanshbatham/ParamSpider.git && pip install ./ParamSpider",
+                run_cmd='paramspider -d "{target}"',
+                update_cmd='cd "{path}" && git pull && pip install .',
+                version_cmd="pip show paramspider | grep Version",
+                install_cmd_win="git clone --depth 1 https://github.com/devanshbatham/ParamSpider.git && pip install .\\ParamSpider",
+                run_cmd_win="paramspider -d {target}",
+                update_cmd_win='cd /d "{path}" && git pull && pip install .',
+                version_cmd_win="pip show paramspider | findstr Version",
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
                 install_path=TOOLS_BASE_DIR / "ParamSpider",
                 requires_go=False,
             ),
@@ -228,8 +267,13 @@ class ToolRegistry:
                 install_cmd='git clone https://github.com/projectdiscovery/nuclei-templates.git "{path}"',
                 run_cmd="",
                 update_cmd='cd "{path}" && git pull',
+<<<<<<< HEAD
                 version_cmd='cd "{path}" && git rev-parse --short HEAD',
                 install_cmd_win='git clone https://github.com/projectdiscovery/nuclei-templates.git "{path}"',
+=======
+                version_cmd="cd '{path}' && git log -1 --format='%H'",
+                install_cmd_win="git clone https://github.com/projectdiscovery/nuclei-templates.git",
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
                 run_cmd_win="",
                 update_cmd_win='cd /d "{path}" && git pull',
                 version_cmd_win='cd /d "{path}" && git rev-parse --short HEAD',
@@ -297,11 +341,19 @@ class ToolRegistry:
                 repo="vulnersCom/nmap-vulners",
                 tool_type=ToolType.NETWORK,
                 description="Nmap vulnerability detection scripts (Nmap required)",
+<<<<<<< HEAD
                 install_cmd='git clone https://github.com/vulnersCom/nmap-vulners.git "{path}"',
                 run_cmd='nmap -sV --script="{path}/vulners.nse" "{target}"',
                 update_cmd='cd "{path}" && git pull',
                 version_cmd='cd "{path}" && git rev-parse --short HEAD',
                 install_cmd_win='git clone https://github.com/vulnersCom/nmap-vulners.git "{path}"',
+=======
+                install_cmd="git clone https://github.com/vulnersCom/nmap-vulners.git",
+                run_cmd='nmap -sV --script="{path}/vulners.nse" "{target}"',
+                update_cmd='cd "{path}" && git pull',
+                version_cmd="cd '{path}' && git log -1 --format='%H'",
+                install_cmd_win="git clone https://github.com/vulnersCom/nmap-vulners.git",
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
                 run_cmd_win='nmap -sV --script="{path}\\vulners.nse" {target}',
                 update_cmd_win='cd /d "{path}" && git pull',
                 version_cmd_win='cd /d "{path}" && git rev-parse --short HEAD',
@@ -468,6 +520,9 @@ class ToolUpdater:
         if state_changed:
             self._save_state()
     
+    async def close(self):
+        await self.github_checker.close()
+    
     def _load_state(self):
         if self.state_file.exists():
             try:
@@ -560,6 +615,7 @@ class ToolUpdater:
             return False
         
         # Check if already installed
+<<<<<<< HEAD
         if self._is_tool_available(tool_name, tool):
             if tool.install_path:
                 print(f"   [!] Already installed: {tool.install_path}")
@@ -580,6 +636,22 @@ class ToolUpdater:
             except Exception as e:
                 print(f"   [X] Failed to clean old install directory: {e}")
                 return False
+=======
+        if "git clone" in tool.install_cmd:
+            if tool.install_path and tool.install_path.exists():
+                print(f"   [!] Already installed: {tool.install_path}")
+                tool.installed = True
+                self._save_state()
+                return True
+        elif "pip install" in tool.install_cmd:
+            # For pip-installed tools, check if command is on PATH
+            pip_cmd_name = tool.name.lower().replace(" ", "")
+            if shutil.which(tool_name) or shutil.which(pip_cmd_name):
+                print(f"   [!] Already installed (found on PATH)")
+                tool.installed = True
+                self._save_state()
+                return True
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
         
         install_cmd = self._get_command(tool, 'install')
         install_cmd = install_cmd.format(path=tool.install_path)
@@ -594,8 +666,17 @@ class ToolUpdater:
         
         success, stdout, stderr = self._run_command(install_cmd, cwd=cwd, timeout=600)
         
+<<<<<<< HEAD
         # Success requires a usable install, not just a created directory.
         is_success = success and self._is_tool_available(tool_name, tool)
+=======
+        # Check success - for pip install, check return code or PATH; for git clone, check directory
+        is_pip_install = "pip install" in install_cmd
+        if is_pip_install:
+            is_success = success or bool(shutil.which(tool_name))
+        else:
+            is_success = success or (tool.install_path and tool.install_path.exists())
+>>>>>>> a55694c42ce979a5390364e2ec7efbe0bf956b87
         
         if is_success:
             tool.installed = True
