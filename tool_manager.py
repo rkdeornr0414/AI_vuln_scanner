@@ -1,5 +1,5 @@
 """
-AI Security Tool Arsenal Manager - Windows Compatible Version
+AI Security Tool Arsenal Manager
 """
 
 import asyncio
@@ -41,6 +41,26 @@ IS_WINDOWS = platform.system() == "Windows"
 IS_MAC = platform.system() == "Darwin"
 IS_LINUX = platform.system() == "Linux"
 
+# Detect python executable - prefer venv python, then system
+def _detect_python():
+    # If running inside a venv, use sys.executable
+    if sys.prefix != sys.base_prefix:
+        return sys.executable
+    if IS_WINDOWS or shutil.which("python"):
+        return "python"
+    return "python3"
+
+PYTHON_CMD = _detect_python()
+
+# Venv check - warn if not in a virtual environment
+if sys.prefix == sys.base_prefix:
+    print("[!] WARNING: Not running inside a virtual environment.")
+    if IS_WINDOWS:
+        print("   Run setup.bat first, then: .venv\\Scripts\\activate.bat")
+    else:
+        print("   Run ./setup.sh first, then: source .venv/bin/activate")
+    print()
+
 print(f"[*] OS: {platform.system()}")
 
 # Tools base directory - Use path without spaces!
@@ -51,6 +71,24 @@ else:
 
 TOOLS_BASE_DIR.mkdir(exist_ok=True)
 print(f"[*] Tools directory: {TOOLS_BASE_DIR}")
+
+# Required files inside git-cloned tool directories.
+TOOL_REQUIRED_FILES = {
+    "sqlmap": ["sqlmap.py"],
+    "xsstrike": ["xsstrike.py"],
+    "dirsearch": ["dirsearch.py"],
+    "paramspider": ["paramspider/main.py"],
+    "nmap-vulners": ["vulners.nse"],
+}
+
+# Command names used to verify PATH-based installs.
+TOOL_COMMAND_ALIASES = {
+    "dirsearch": ["dirsearch"],
+    "paramspider": ["paramspider"],
+    "nuclei": ["nuclei"],
+    "httpx": ["httpx"],
+    "subfinder": ["subfinder"],
+}
 
 
 # ============================================================================
@@ -86,7 +124,6 @@ class SecurityTool:
     last_updated: str = ""
     install_path: Path = None
     requires_go: bool = False
-    requires_perl: bool = False
 
 
 @dataclass
@@ -116,17 +153,16 @@ class ToolRegistry:
                 repo="sqlmapproject/sqlmap",
                 tool_type=ToolType.SQL_INJECTION,
                 description="Automatic SQL Injection detection and exploitation tool",
-                install_cmd="git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git",
-                run_cmd="python {path}/sqlmap.py -u {target} --batch",
-                update_cmd="cd {path} && git pull",
-                version_cmd="python {path}/sqlmap.py --version",
-                install_cmd_win="git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git",
-                run_cmd_win='python "{path}\\sqlmap.py" -u {target} --batch',
+                install_cmd='git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git "{path}"',
+                run_cmd=f'{PYTHON_CMD} "{{path}}/sqlmap.py" -u "{{target}}" --batch',
+                update_cmd='cd "{path}" && git pull',
+                version_cmd=f'{PYTHON_CMD} "{{path}}/sqlmap.py" --version',
+                install_cmd_win='git clone --depth 1 https://github.com/sqlmapproject/sqlmap.git "{path}"',
+                run_cmd_win='python "{path}\\sqlmap.py" -u "{target}" --batch',
                 update_cmd_win='cd /d "{path}" && git pull',
                 version_cmd_win='python "{path}\\sqlmap.py" --version',
                 install_path=TOOLS_BASE_DIR / "sqlmap",
                 requires_go=False,
-                requires_perl=False
             ),
             
             # XSStrike - XSS Detection (Python only)
@@ -135,17 +171,16 @@ class ToolRegistry:
                 repo="s0md3v/XSStrike",
                 tool_type=ToolType.XSS,
                 description="Advanced XSS detection tool (run via python xsstrike.py)",
-                install_cmd="git clone --depth 1 https://github.com/s0md3v/XSStrike.git",
-                run_cmd='python "{path}/xsstrike.py" -u "{target}"',
-                update_cmd="cd {path} && git pull",
-                version_cmd='python "{path}/xsstrike.py" -h',
-                install_cmd_win="git clone --depth 1 https://github.com/s0md3v/XSStrike.git",
+                install_cmd='git clone --depth 1 https://github.com/s0md3v/XSStrike.git "{path}"',
+                run_cmd=f'{PYTHON_CMD} "{{path}}/xsstrike.py" -u "{{target}}"',
+                update_cmd='cd "{path}" && git pull',
+                version_cmd=f'{PYTHON_CMD} "{{path}}/xsstrike.py" -h',
+                install_cmd_win='git clone --depth 1 https://github.com/s0md3v/XSStrike.git "{path}"',
                 run_cmd_win='python "{path}\\xsstrike.py" -u "{target}"',
                 update_cmd_win='cd /d "{path}" && git pull',
                 version_cmd_win='python "{path}\\xsstrike.py" -h',
                 install_path=TOOLS_BASE_DIR / "XSStrike",
                 requires_go=False,
-                requires_perl=False
             ),
             
             # Dirsearch - Directory bruteforce (Python only)
@@ -154,17 +189,16 @@ class ToolRegistry:
                 repo="maurosoria/dirsearch",
                 tool_type=ToolType.RECON,
                 description="Web path bruteforce tool",
-                install_cmd="pip install dirsearch",
-                run_cmd="dirsearch -u {target}",
-                update_cmd="pip install --upgrade dirsearch",
-                version_cmd="dirsearch --version",
-                install_cmd_win="pip install dirsearch",
-                run_cmd_win="dirsearch -u {target}",
-                update_cmd_win="pip install --upgrade dirsearch",
-                version_cmd_win="dirsearch --version",
+                install_cmd='git clone --depth 1 https://github.com/maurosoria/dirsearch.git "{path}" && pip install -r "{path}/requirements.txt"',
+                run_cmd=f'{PYTHON_CMD} "{{path}}/dirsearch.py" -u "{{target}}"',
+                update_cmd='cd "{path}" && git pull',
+                version_cmd=f'{PYTHON_CMD} "{{path}}/dirsearch.py" --version',
+                install_cmd_win='git clone --depth 1 https://github.com/maurosoria/dirsearch.git "{path}" && pip install -r "{path}\\requirements.txt"',
+                run_cmd_win='python "{path}\\dirsearch.py" -u "{target}"',
+                update_cmd_win='cd /d "{path}" && git pull',
+                version_cmd_win='python "{path}\\dirsearch.py" --version',
                 install_path=TOOLS_BASE_DIR / "dirsearch",
                 requires_go=False,
-                requires_perl=False
             ),
             
             # ParamSpider - Parameter collection (Python only)
@@ -173,17 +207,16 @@ class ToolRegistry:
                 repo="devanshbatham/ParamSpider",
                 tool_type=ToolType.RECON,
                 description="Mining URLs from web archives for parameter discovery",
-                install_cmd="pip install paramspider",
-                run_cmd="paramspider -d {target}",
-                update_cmd="pip install --upgrade paramspider",
-                version_cmd="paramspider --help",
-                install_cmd_win="pip install paramspider",
-                run_cmd_win="paramspider -d {target}",
-                update_cmd_win="pip install --upgrade paramspider",
-                version_cmd_win="paramspider --help",
+                install_cmd=f'git clone --depth 1 https://github.com/devanshbatham/ParamSpider.git "{{path}}" && PYTHONUTF8=1 {PYTHON_CMD} -m pip install "{{path}}"',
+                run_cmd=f'{PYTHON_CMD} -m paramspider.main -d "{{target}}"',
+                update_cmd=f'cd "{{path}}" && git pull && PYTHONUTF8=1 {PYTHON_CMD} -m pip install --upgrade "{{path}}"',
+                version_cmd='cd "{path}" && git rev-parse --short HEAD',
+                install_cmd_win='git clone --depth 1 https://github.com/devanshbatham/ParamSpider.git "{path}" && set PYTHONUTF8=1&& python -m pip install "{path}"',
+                run_cmd_win='python -m paramspider.main -d "{target}"',
+                update_cmd_win='cd /d "{path}" && git pull && set PYTHONUTF8=1&& python -m pip install --upgrade "{path}"',
+                version_cmd_win='cd /d "{path}" && git rev-parse --short HEAD',
                 install_path=TOOLS_BASE_DIR / "ParamSpider",
                 requires_go=False,
-                requires_perl=False
             ),
             
             # Nuclei Templates - CVE templates (Git only)
@@ -192,17 +225,16 @@ class ToolRegistry:
                 repo="projectdiscovery/nuclei-templates",
                 tool_type=ToolType.VULNERABILITY_SCANNER,
                 description="Nuclei vulnerability templates (CVE, misconfigs, etc.)",
-                install_cmd="git clone https://github.com/projectdiscovery/nuclei-templates.git",
+                install_cmd='git clone https://github.com/projectdiscovery/nuclei-templates.git "{path}"',
                 run_cmd="",
-                update_cmd="cd {path} && git pull",
-                version_cmd="cd {path} && git log -1 --format=%H",
-                install_cmd_win="git clone https://github.com/projectdiscovery/nuclei-templates.git",
+                update_cmd='cd "{path}" && git pull',
+                version_cmd='cd "{path}" && git rev-parse --short HEAD',
+                install_cmd_win='git clone https://github.com/projectdiscovery/nuclei-templates.git "{path}"',
                 run_cmd_win="",
                 update_cmd_win='cd /d "{path}" && git pull',
-                version_cmd_win='cd /d "{path}" && git log -1 --format=%%H',
+                version_cmd_win='cd /d "{path}" && git rev-parse --short HEAD',
                 install_path=TOOLS_BASE_DIR / "nuclei-templates",
                 requires_go=False,
-                requires_perl=False
             ),
             
             # Nuclei - CVE Scanner (Go required)
@@ -212,7 +244,7 @@ class ToolRegistry:
                 tool_type=ToolType.VULNERABILITY_SCANNER,
                 description="Fast and customizable vulnerability scanner (Go required)",
                 install_cmd="go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest",
-                run_cmd="nuclei -u {target}",
+                run_cmd='nuclei -u "{target}"',
                 update_cmd="nuclei -ut",
                 version_cmd="nuclei -version",
                 install_cmd_win="go install -v github.com/projectdiscovery/nuclei/v3/cmd/nuclei@latest",
@@ -221,7 +253,6 @@ class ToolRegistry:
                 version_cmd_win="nuclei -version",
                 install_path=TOOLS_BASE_DIR / "nuclei",
                 requires_go=True,
-                requires_perl=False
             ),
             
             # httpx - HTTP probe (Go required)
@@ -231,7 +262,7 @@ class ToolRegistry:
                 tool_type=ToolType.RECON,
                 description="Fast HTTP probe tool (Go required)",
                 install_cmd="go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest",
-                run_cmd="echo {target} | httpx -tech-detect",
+                run_cmd='echo "{target}" | httpx -tech-detect',
                 update_cmd="go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest",
                 version_cmd="httpx -version",
                 install_cmd_win="go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest",
@@ -240,7 +271,6 @@ class ToolRegistry:
                 version_cmd_win="httpx -version",
                 install_path=TOOLS_BASE_DIR / "httpx",
                 requires_go=True,
-                requires_perl=False
             ),
             
             # Subfinder - Subdomain discovery (Go required)
@@ -250,7 +280,7 @@ class ToolRegistry:
                 tool_type=ToolType.RECON,
                 description="Fast subdomain discovery tool (Go required)",
                 install_cmd="go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest",
-                run_cmd="subfinder -d {target}",
+                run_cmd='subfinder -d "{target}"',
                 update_cmd="go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest",
                 version_cmd="subfinder -version",
                 install_cmd_win="go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest",
@@ -259,26 +289,6 @@ class ToolRegistry:
                 version_cmd_win="subfinder -version",
                 install_path=TOOLS_BASE_DIR / "subfinder",
                 requires_go=True,
-                requires_perl=False
-            ),
-            
-            # Nikto - Web server scanner (Perl required)
-            "nikto": SecurityTool(
-                name="Nikto",
-                repo="sullo/nikto",
-                tool_type=ToolType.VULNERABILITY_SCANNER,
-                description="Web server vulnerability scanner (Perl required)",
-                install_cmd="git clone https://github.com/sullo/nikto.git",
-                run_cmd="perl {path}/program/nikto.pl -h {target}",
-                update_cmd="cd {path} && git pull",
-                version_cmd="perl {path}/program/nikto.pl -Version",
-                install_cmd_win="git clone https://github.com/sullo/nikto.git",
-                run_cmd_win='perl "{path}\\program\\nikto.pl" -h {target}',
-                update_cmd_win='cd /d "{path}" && git pull',
-                version_cmd_win='perl "{path}\\program\\nikto.pl" -Version',
-                install_path=TOOLS_BASE_DIR / "nikto",
-                requires_go=False,
-                requires_perl=True
             ),
             
             # Nmap Vulners - Network vulnerability scripts
@@ -287,17 +297,16 @@ class ToolRegistry:
                 repo="vulnersCom/nmap-vulners",
                 tool_type=ToolType.NETWORK,
                 description="Nmap vulnerability detection scripts (Nmap required)",
-                install_cmd="git clone https://github.com/vulnersCom/nmap-vulners.git",
-                run_cmd="nmap -sV --script={path}/vulners.nse {target}",
-                update_cmd="cd {path} && git pull",
-                version_cmd="cd {path} && git log -1 --format=%H",
-                install_cmd_win="git clone https://github.com/vulnersCom/nmap-vulners.git",
+                install_cmd='git clone https://github.com/vulnersCom/nmap-vulners.git "{path}"',
+                run_cmd='nmap -sV --script="{path}/vulners.nse" "{target}"',
+                update_cmd='cd "{path}" && git pull',
+                version_cmd='cd "{path}" && git rev-parse --short HEAD',
+                install_cmd_win='git clone https://github.com/vulnersCom/nmap-vulners.git "{path}"',
                 run_cmd_win='nmap -sV --script="{path}\\vulners.nse" {target}',
                 update_cmd_win='cd /d "{path}" && git pull',
-                version_cmd_win='cd /d "{path}" && git log -1 --format=%%H',
+                version_cmd_win='cd /d "{path}" && git rev-parse --short HEAD',
                 install_path=TOOLS_BASE_DIR / "nmap-vulners",
                 requires_go=False,
-                requires_perl=False
             ),
         }
         
@@ -313,6 +322,17 @@ class GitHubChecker:
     def __init__(self, github_token: Optional[str] = None):
         self.github_token = github_token or os.getenv("GITHUB_TOKEN")
         self.api_base = "https://api.github.com"
+        self._session: Optional[aiohttp.ClientSession] = None
+    
+    async def _get_session(self) -> aiohttp.ClientSession:
+        if self._session is None or self._session.closed:
+            self._session = aiohttp.ClientSession()
+        return self._session
+    
+    async def close(self):
+        if self._session and not self._session.closed:
+            await self._session.close()
+            self._session = None
         
     async def get_latest_release(self, repo: str) -> dict:
         url = f"{self.api_base}/repos/{repo}/releases/latest"
@@ -322,20 +342,20 @@ class GitHubChecker:
             headers["Authorization"] = f"token {self.github_token}"
         
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        return {
-                            "version": data.get("tag_name", ""),
-                            "published_at": data.get("published_at", ""),
-                            "html_url": data.get("html_url", ""),
-                            "body": data.get("body", "")[:500]
-                        }
-                    elif response.status == 404:
-                        return await self.get_latest_commit(repo)
-                    else:
-                        return {}
+            session = await self._get_session()
+            async with session.get(url, headers=headers) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return {
+                        "version": data.get("tag_name", ""),
+                        "published_at": data.get("published_at", ""),
+                        "html_url": data.get("html_url", ""),
+                        "body": data.get("body", "")[:500]
+                    }
+                elif response.status == 404:
+                    return await self.get_latest_commit(repo)
+                else:
+                    return {}
         except Exception as e:
             print(f"   [!] GitHub connection failed: {e}")
             return {}
@@ -348,19 +368,19 @@ class GitHubChecker:
             headers["Authorization"] = f"token {self.github_token}"
         
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers, params={"per_page": 1}) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        if data:
-                            commit = data[0]
-                            return {
-                                "version": commit["sha"][:7],
-                                "published_at": commit["commit"]["committer"]["date"],
-                                "html_url": commit["html_url"],
-                                "body": commit["commit"]["message"][:200]
-                            }
-                    return {}
+            session = await self._get_session()
+            async with session.get(url, headers=headers, params={"per_page": 1}) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    if data:
+                        commit = data[0]
+                        return {
+                            "version": commit["sha"][:7],
+                            "published_at": commit["commit"]["committer"]["date"],
+                            "html_url": commit["html_url"],
+                            "body": commit["commit"]["message"][:200]
+                        }
+                return {}
         except Exception as e:
             return {}
     
@@ -393,6 +413,60 @@ class ToolUpdater:
         self.tools = ToolRegistry.get_all_tools()
         self.state_file = TOOLS_BASE_DIR / "tool_state.json"
         self._load_state()
+        self._sync_installed_state()
+    
+    async def close(self):
+        await self.github_checker.close()
+
+    def _path_has_content(self, path: Optional[Path]) -> bool:
+        if not path or not path.exists():
+            return False
+        try:
+            next(path.iterdir())
+            return True
+        except StopIteration:
+            return False
+        except OSError:
+            return False
+
+    def _command_exists(self, tool_name: str, tool: SecurityTool) -> bool:
+        candidates = TOOL_COMMAND_ALIASES.get(tool_name)
+        if not candidates:
+            normalized_name = tool.name.lower().replace(" ", "")
+            candidates = [tool_name, normalized_name]
+        return any(shutil.which(cmd) for cmd in candidates)
+
+    def _is_tool_available(self, tool_name: str, tool: SecurityTool) -> bool:
+        if "git clone" in tool.install_cmd:
+            if not tool.install_path or not tool.install_path.exists():
+                return False
+
+            required_files = TOOL_REQUIRED_FILES.get(tool_name, [])
+            if required_files:
+                return all((tool.install_path / rel_path).exists() for rel_path in required_files)
+
+            return self._path_has_content(tool.install_path)
+
+        if "pip install" in tool.install_cmd or tool.requires_go:
+            return self._command_exists(tool_name, tool)
+
+        if tool.install_path:
+            return tool.install_path.exists()
+
+        return False
+
+    def _sync_installed_state(self):
+        state_changed = False
+        for tool_name, tool in self.tools.items():
+            actual_installed = self._is_tool_available(tool_name, tool)
+            if tool.installed != actual_installed:
+                tool.installed = actual_installed
+                if not actual_installed:
+                    tool.local_version = ""
+                    tool.last_updated = ""
+                state_changed = True
+        if state_changed:
+            self._save_state()
     
     def _load_state(self):
         if self.state_file.exists():
@@ -402,9 +476,10 @@ class ToolUpdater:
                     
                 for tool_name, tool_state in state.items():
                     if tool_name in self.tools:
-                        self.tools[tool_name].installed = tool_state.get('installed', False)
-                        self.tools[tool_name].local_version = tool_state.get('local_version', '')
-                        self.tools[tool_name].last_updated = tool_state.get('last_updated', '')
+                        tool = self.tools[tool_name]
+                        tool.installed = tool_state.get('installed', False)
+                        tool.local_version = tool_state.get('local_version', '')
+                        tool.last_updated = tool_state.get('last_updated', '')
             except Exception as e:
                 print(f"[!] Failed to load state: {e}")
     
@@ -466,10 +541,6 @@ class ToolUpdater:
             if not success:
                 return False, "Go is not installed. https://go.dev/dl/"
         
-        if tool.requires_perl:
-            success, _, _ = self._run_command("perl --version")
-            if not success:
-                return False, "Perl is not installed. https://strawberryperl.com/"
         
         return True, "OK"
     
@@ -488,12 +559,27 @@ class ToolUpdater:
             print(f"   [X] {msg}")
             return False
         
-        # Check if already installed (for git clone methods)
-        if tool.install_path and tool.install_path.exists() and "git clone" in tool.install_cmd:
-            print(f"   [!] Already installed: {tool.install_path}")
+        # Check if already installed
+        if self._is_tool_available(tool_name, tool):
+            if tool.install_path:
+                print(f"   [!] Already installed: {tool.install_path}")
+            else:
+                print("   [!] Already installed (found on PATH)")
             tool.installed = True
+            tool.local_version = await self._get_local_version(tool)
+            if not tool.last_updated:
+                tool.last_updated = datetime.now().isoformat()
             self._save_state()
             return True
+
+        # Remove broken git clone directories before reinstalling.
+        if "git clone" in tool.install_cmd and tool.install_path and tool.install_path.exists():
+            print(f"   [!] Found incomplete installation at {tool.install_path}. Reinstalling...")
+            try:
+                shutil.rmtree(tool.install_path)
+            except Exception as e:
+                print(f"   [X] Failed to clean old install directory: {e}")
+                return False
         
         install_cmd = self._get_command(tool, 'install')
         install_cmd = install_cmd.format(path=tool.install_path)
@@ -508,9 +594,8 @@ class ToolUpdater:
         
         success, stdout, stderr = self._run_command(install_cmd, cwd=cwd, timeout=600)
         
-        # Check success - for pip install, check return code; for git clone, check directory
-        is_pip_install = "pip install" in install_cmd
-        is_success = success if is_pip_install else (success or (tool.install_path and tool.install_path.exists()))
+        # Success requires a usable install, not just a created directory.
+        is_success = success and self._is_tool_available(tool_name, tool)
         
         if is_success:
             tool.installed = True
@@ -535,9 +620,13 @@ class ToolUpdater:
         
         tool = self.tools[tool_name]
         
-        if not tool.installed:
-            print(f"[!] {tool.name} is not installed.")
+        if not self._is_tool_available(tool_name, tool):
+            tool.installed = False
+            self._save_state()
+            print(f"[!] {tool.name} is not installed or installation is incomplete.")
             return await self.install_tool(tool_name)
+
+        tool.installed = True
         
         print(f"\n[*] Checking updates for {tool.name}...")
         
@@ -582,13 +671,17 @@ class ToolUpdater:
             version_patterns = [
                 r'v?(\d+\.\d+\.\d+)',
                 r'version[:\s]+(\S+)',
-                r'^([a-f0-9]{7,40})$'
+                r'^([a-f0-9]{7,40})\s*$'
             ]
             
             for pattern in version_patterns:
                 match = re.search(pattern, stdout + stderr, re.IGNORECASE | re.MULTILINE)
                 if match:
-                    return match.group(1)
+                    ver = match.group(1)
+                    # Truncate full git SHA to short hash
+                    if re.fullmatch(r'[a-f0-9]{8,40}', ver):
+                        return ver[:7]
+                    return ver
             
             return stdout.strip()[:20] if stdout else "installed"
         
@@ -640,8 +733,6 @@ class ToolUpdater:
             requirements = []
             if tool.requires_go:
                 requirements.append("Go")
-            if tool.requires_perl:
-                requirements.append("Perl")
             req_str = f" ({', '.join(requirements)} required)" if requirements else ""
             
             status_list.append({
@@ -801,12 +892,26 @@ class ToolExecutor:
                 error=f"{tool.name} is not installed",
                 execution_time=0
             )
+
+        if not self.tool_updater._is_tool_available(tool_name, tool):
+            tool.installed = False
+            self.tool_updater._save_state()
+            return ToolExecutionResult(
+                tool_name=tool_name,
+                command="",
+                success=False,
+                output="",
+                error=(
+                    f"{tool.name} installation is incomplete. "
+                    f"Run: python tool_manager.py install {tool_name}"
+                ),
+                execution_time=0
+            )
         
         # Build command with proper quoting for paths with spaces
         format_vars = {
             'path': str(tool.install_path),
             'target': target,
-            'template': '',
         }
         
         if IS_WINDOWS:
@@ -814,8 +919,8 @@ class ToolExecutor:
         else:
             command = tool.run_cmd.format(**format_vars)
         
-        # Clean up empty options
-        command = command.replace(" -t  ", " ").replace("  ", " ").strip()
+        # Clean up double spaces
+        command = command.replace("  ", " ").strip()
         
         if extra_args:
             command += f" {extra_args}"
@@ -839,7 +944,8 @@ class ToolExecutor:
             
             execution_time = time.time() - start_time
             
-            findings = self._extract_findings(tool_name, result.stdout + result.stderr)
+            findings_input = result.stdout if result.returncode == 0 else ""
+            findings = self._extract_findings(tool_name, findings_input)
             
             return ToolExecutionResult(
                 tool_name=tool_name,
@@ -898,7 +1004,16 @@ class ToolExecutor:
                 })
         
         elif tool_name == "xsstrike":
-            if "Vulnerable" in output or "XSS" in output:
+            lowered = output.lower()
+            xss_indicators = [
+                "vulnerable",
+                "xss found",
+                "possible xss",
+                "confirmed xss",
+                "payload was successful",
+                "payloads were successful",
+            ]
+            if any(indicator in lowered for indicator in xss_indicators):
                 findings.append({
                     "severity": "MEDIUM",
                     "id": "XSS",
@@ -912,15 +1027,69 @@ class ToolExecutor:
 # CLI Interface
 # ============================================================================
 
+async def _auto_install_go() -> bool:
+    """Auto-install Go if not found. Returns True if Go is available after."""
+    print("\n[*] Go not found. Attempting automatic installation...")
+    
+    if IS_WINDOWS:
+        go_version = "1.23.6"
+        msi = f"go{go_version}.windows-amd64.msi"
+        url = f"https://go.dev/dl/{msi}"
+        cmds = [
+            f'powershell -Command "Invoke-WebRequest -Uri \'{url}\' -OutFile \'%TEMP%\\{msi}\'"',
+            f'msiexec /i "%TEMP%\\{msi}" /quiet /norestart',
+        ]
+        for cmd in cmds:
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
+            if result.returncode != 0:
+                print(f"   [X] Go installation failed: {result.stderr[:200]}")
+                return False
+        # Update PATH for this process
+        go_path = r"C:\Program Files\Go\bin"
+        os.environ["PATH"] = go_path + os.pathsep + os.environ.get("PATH", "")
+    else:
+        import struct
+        go_version = "1.23.6"
+        arch_map = {"x86_64": "amd64", "aarch64": "arm64", "armv7l": "armv6l"}
+        machine = platform.machine()
+        go_arch = arch_map.get(machine, "amd64")
+        go_tar = f"go{go_version}.linux-{go_arch}.tar.gz"
+        url = f"https://go.dev/dl/{go_tar}"
+        
+        cmds = [
+            f'curl -fsSL "{url}" -o "/tmp/{go_tar}"',
+            f'rm -rf /usr/local/go && tar -C /usr/local -xzf "/tmp/{go_tar}"',
+            f'rm -f "/tmp/{go_tar}"',
+        ]
+        for cmd in cmds:
+            print(f"   Running: {cmd[:80]}...")
+            result = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=300)
+            if result.returncode != 0:
+                print(f"   [X] Go installation failed: {result.stderr[:200]}")
+                return False
+        
+        # Update PATH for this process
+        os.environ["PATH"] = f"/usr/local/go/bin:{Path.home()}/go/bin:" + os.environ.get("PATH", "")
+    
+    if shutil.which("go"):
+        result = subprocess.run("go version", shell=True, capture_output=True, text=True)
+        print(f"   [OK] {result.stdout.strip()}")
+        return True
+    else:
+        print("   [X] Go installed but not found in PATH")
+        return False
+
+
 async def main():
     
     print("""
 +==============================================================+
-|        AI Security Tool Arsenal Manager (Windows)            |
+|          AI Security Tool Arsenal Manager                    |
 +==============================================================+
 |  Commands:                                                   |
 |    list        - Show all tools status                       |
 |    install     - Install tool (e.g., install sqlmap)         |
+|    install-all - Install all available tools                 |
 |    update      - Update tool (e.g., update sqlmap)           |
 |    update-all  - Update all tools                            |
 |    check       - Check for available updates                 |
@@ -936,6 +1105,13 @@ async def main():
     command = sys.argv[1].lower()
     updater = ToolUpdater()
     
+    try:
+        await _run_command(command, updater)
+    finally:
+        await updater.close()
+
+
+async def _run_command(command: str, updater: ToolUpdater):
     # list
     if command == "list":
         status = updater.get_tool_status()
@@ -964,6 +1140,23 @@ async def main():
         
         tool_name = sys.argv[2].lower()
         await updater.install_tool(tool_name)
+    
+    # install-all
+    elif command == "install-all":
+        print("\n[*] Installing all available tools...")
+        has_go = bool(shutil.which("go"))
+        
+        # Auto-install Go if missing
+        if not has_go:
+            has_go = await _auto_install_go()
+        
+        for tool_name, tool in updater.tools.items():
+            if tool.requires_go and not has_go:
+                print(f"\n[!] Skipping {tool.name} (requires Go - auto-install failed)")
+                continue
+            await updater.install_tool(tool_name)
+        
+        print("\n[OK] install-all complete.")
     
     # update
     elif command == "update":

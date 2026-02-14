@@ -1,0 +1,6 @@
+.venv/
+__pycache__/
+*.pyc
+.ai_security_tools/
+tools/*
+!tools/tool_state.json
