@@ -4,3 +4,4 @@ __pycache__/
 .ai_security_tools/
 tools/*
 !tools/tool_state.json
+reports/
